@@ -1,6 +1,6 @@
-# Getting Started with Create React App
+# Blackjack
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A very minimalist version of blackjack that I created with React.
 
 ## Available Scripts
 
