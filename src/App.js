@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useState, useEffect } from "react";
+import React, { useState, useRef } from "react";
 
 const cards = [
   "2",
@@ -35,17 +35,17 @@ for (const card of cards) {
   }
 }
 
-let curDeck = [...deck];
-
 function App() {
+  const [start, setStart] = useState(false);
   const [hand, setHand] = useState([]);
   const [dealer, setDealer] = useState([]);
   const [endMessage, setEndMessage] = useState(null);
+  const curDeck = useRef([...deck]);
 
   const drawCard = () => {
-    const i = Math.floor(Math.random() * curDeck.length);
-    const card = curDeck[i];
-    curDeck.splice(i, 1);
+    const i = Math.floor(Math.random() * curDeck.current.length);
+    const card = curDeck.current[i];
+    curDeck.current.splice(i, 1);
     return card;
   };
 
@@ -116,42 +116,50 @@ function App() {
   };
 
   const reset = () => {
-    curDeck = [...deck];
+    curDeck.current = [...deck];
     setEndMessage(null);
     deal();
   };
 
-  useEffect(() => {
-    if (curDeck.length === 52) {
-      deal();
-    }
-  }, []);
-
   return (
     <div className="App">
-      {endMessage ? <p>{endMessage}</p> : null}
-      <p>Dealer's Hand</p>
-      {endMessage ? (
+      {!start && (
+        <button
+          onClick={() => {
+            deal();
+            setStart(true);
+          }}
+        >
+          Start
+        </button>
+      )}
+      {start && (
         <div>
-          {dealer.map((card, i) => (
+          {endMessage ? <p>{endMessage}</p> : null}
+          <p>Dealer's Hand</p>
+          {endMessage ? (
+            <div>
+              {dealer.map((card, i) => (
+                <p key={i}>{card.name}</p>
+              ))}
+              <p>{`Dealer's total: ${calculateHand(dealer)}`}</p>
+            </div>
+          ) : (
+            <div>
+              {dealer.length > 0 && <p>{dealer[0].name}</p>}
+              {dealer.length > 0 && <p>{`Dealer's total: ${dealer[0].val}`}</p>}
+            </div>
+          )}
+          <p>Player's Hand</p>
+          {hand.map((card, i) => (
             <p key={i}>{card.name}</p>
           ))}
-          <p>{`Dealer's total: ${calculateHand(dealer)}`}</p>
-        </div>
-      ) : (
-        <div>
-          <p>{dealer.length > 0 ? dealer[0].name : null}</p>
-          <p>{dealer.length > 0 ? `Dealer's total: ${dealer[0].val}` : null}</p>
+          <p>{`Player's total: ${calculateHand(hand)}`}</p>
+          {endMessage == null && <button onClick={dealerTurn}>Stand</button>}
+          {endMessage == null && <button onClick={playerHits}>Hit</button>}
+          {endMessage && <button onClick={reset}>Play Again</button>}
         </div>
       )}
-      <p>Player's Hand</p>
-      {hand.map((card, i) => (
-        <p key={i}>{card.name}</p>
-      ))}
-      <p>{`Player's total: ${calculateHand(hand)}`}</p>
-      {endMessage == null ? <button onClick={dealerTurn}>Stand</button> : null}
-      {endMessage == null ? <button onClick={playerHits}>Hit</button> : null}
-      {endMessage ? <button onClick={reset}>Play Again</button> : null}
     </div>
   );
 }
